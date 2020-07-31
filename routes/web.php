@@ -4,6 +4,10 @@ use Illuminate\Support\Facades\Route;
 use App\Post;
 use App\User;
 use App\Role;
+use App\Country;
+use App\Photo;
+use App\Tag;
+use Carbon\Carbon;
 
 /*
 |--------------------------------------------------------------------------
@@ -13,14 +17,14 @@ use App\Role;
 | Here is where you can register web routes for your application. These
 | routes are loaded by the RouteServiceProvider within a group which
 | contains the "web" middleware group. Now create something great!
-|
+|sudo composer create-project laravel/laravel onetoone --prefer-dist
+
 */
+
 
 Route::get('/', function () {
     return view('welcome');
 });
-
-// Route::resource('posts', 'PostsController');
 
 Route::get('contact', 'PostsController@contact');
 
@@ -106,5 +110,71 @@ Route::get('user/pivot', function() {
 });
 
 Route::get('user/country', function() {
-    
+    $country = Country::find(1); 
+    foreach($country->posts as $post) {
+        return $post->content;
+    }
 });
+
+Route::get('post/{id}/photos', function($id) {
+    $post = Post::find($id);
+    foreach($post->photos as $photo) {
+        return $photo;
+    }
+});
+
+Route::get('user/photos', function() {
+    $user = User::find(1);
+    foreach($user->photos as $photo) {
+        return $photo;
+    }
+});
+
+Route::get('photo/{id}/post', function($id) {
+    $photo = Photo::findOrFail($id);
+    return $photo->imageable;
+});
+
+Route::get('post/tag', function() {
+    $post = Post::find(1);
+    foreach($post->tags as $tag) {
+        return $tag;
+    }
+});
+
+Route::get('tag/post', function() {
+    $tag = Tag::find(2);
+    foreach($tag->posts as $post) {
+        return $post->title;
+    }
+});
+
+Route::group(['middleware'=>'web'], function(){
+    Route::resource('/posts', 'PostsController');
+});
+
+Route::get('date', function(){
+    $date = new DateTime('+1 week');
+    echo $date->format('m-d-Y');
+    echo '<br/>';
+    echo Carbon::now('Asia/Ho_Chi_Minh')->addDays(21)->diffForHumans();
+    echo '<br/>';
+    echo Carbon::now('Asia/Ho_Chi_Minh')->subMonths(5)->diffForHumans();
+    echo '<br/>';
+    echo Carbon::now('Asia/Ho_Chi_Minh')->yesterday()->diffForHumans();
+});
+
+Route::get('getname', function() {
+    $user = User::find(1);
+    echo $user->name;
+});
+
+Route::get('setname', function() {
+    $user = User::find(1);
+    $user->name = 'huy';
+    $user->save();
+});
+
+Auth::routes();
+
+Route::get('/home', 'HomeController@index')->name('home');
